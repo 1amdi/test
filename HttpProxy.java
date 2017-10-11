@@ -1,9 +1,4 @@
 package com.yidianzixun.util;
-
-/**
- * Created by gongjiao on 2017/8/30.
- */
-
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;

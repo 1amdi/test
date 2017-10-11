@@ -1,0 +1,703 @@
+import com.yidianzixun.entity.ProxyIp;
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpHost;
+import org.apache.http.HttpResponse;
+import org.apache.http.ParseException;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
+import org.apache.log4j.Logger;
+import org.jsoup.Connection;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Entities;
+import org.jsoup.parser.Parser;
+import org.jsoup.parser.XmlTreeBuilder;
+import org.jsoup.select.Elements;
+
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.SocketTimeoutException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static com.yidianzixun.util.FileUtils.readFileByLine;
+import static com.yidianzixun.util.RedisUtil.getList;
+
+
+/**
+ * 抓取对应地址工具类
+ * @author wuqiyang
+ *
+ */
+public class JsoupUtils {
+	private  static Logger log = Logger.getLogger(JsoupUtils.class);
+	public static String ip_filePath = System.getProperty("user.dir") + "/" + "proxyfile/";
+	public static Document getDocument(String url){
+		log.info("抓取对应地址工具类中的地址是:" + url);
+		Document doc = null;
+		while(doc == null){
+			try {
+//				doc = Jsoup.connect(url).get();
+//				doc = Jsoup.parse(new URL(url).openStream(), "GBK", url);
+				doc = Jsoup.parse(new URL(url).openStream(), "utf-8", url);
+				ThreadUtil.getSleep();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		return doc;
+	}
+	public static Document getDocument1(String url){
+		String cookie = "tnet=220.160.125.218; _pk_ref.1.e431=%5B%22%22%2C%22%22%2C1474510657%2C%22http%3A%2F%2Fantirobot.tianyancha.com%2Fcaptcha%2Fverify%3Freturn_url%3Dhttp%3A%2F%2Fwww.tianyancha.com%2Fcompany%2F22822%26rnd%3D9rGCSuVmjzCJQtn40wxl2w%3D%3D%22%5D; TYCID=bb7c05374d4944ec9af87c1c2fa1e8af; RTYCID=10ec9a7683ba4c61945b7880517e3d97; _pk_id.1.e431=47cf9a1c870f385e.1473646910.39.1474511202.1474510657.; _pk_ses.1.e431=*; Hm_lvt_e92c8d65d92d534b0fc290df538b4758=1474247407,1474336155,1474430037,1474507142; Hm_lpvt_e92c8d65d92d534b0fc290df538b4758=1474511202; token=22d9eb5d09b14075bd2ebde251e3fabb; _utm=f21853d53d3b49879e85e08dd411a053";
+		Document doc = null;
+		int nums=0;
+		while(doc == null&&nums<5){
+			try {
+				doc = Jsoup.connect(url)
+//						.referrer("http://www.tianyancha.com/search?key=%E5%8E%A6%E9%97%A8%E9%9B%86%E5%BE%AE%E7%A7%91%E6%8A%80")
+//						.cookie("tnet", "220.160.125.218")
+//						.cookie("_pk_ref.1.e431", "%5B%22%22%2C%22%22%2C1474510657%2C%22http%3A%2F%2Fantirobot.tianyancha.com%2Fcaptcha%2Fverify%3Freturn_url%3Dhttp%3A%2F%2Fwww.tianyancha.com%2Fcompany%2F22822%26rnd%3D9rGCSuVmjzCJQtn40wxl2w%3D%3D%22%5D")
+//						.cookie("TYCID", "bb7c05374d4944ec9af87c1c2fa1e8af")
+//						.cookie("RTYCID", "10ec9a7683ba4c61945b7880517e3d97")
+//						.cookie("_pk_id.1.e431", "47cf9a1c870f385e.1473646910.39.1474511202.1474510657.")
+//						.cookie("_pk_ses.1.e431", "*")
+//						.cookie("Hm_lvt_e92c8d65d92d534b0fc290df538b4758", "1474247407,1474336155,1474430037,1474507142")
+//						.cookie("Hm_lpvt_e92c8d65d92d534b0fc290df538b4758", "1474511781")
+//						.cookie("token", "8a048d9ec0f249519c38de83fe28522a")
+//						.cookie("_utm", "4aa05e54762d49a8a0452e50226412a8")
+						.header("Accept", "*/*")
+						.header("Accept-Encoding", "gzip, deflate")
+						.header("Accept-Language","zh-CN,zh;q=0.8,en-US;q=0.5,en;q=0.3")
+						.header("Content-Type", "application/json;charset=UTF-8")
+						.header("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36")
+						.timeout(10000).ignoreContentType(true).get();//.get();
+				ThreadUtil.getSleep();
+				nums++;
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		return doc;
+	}
+	public static Document getDocument2(String url){
+		String cookie="BAIDUID=763A6EC27D2E6A07572312E4AC14A8B5:FG=1; BIDUPSID=763A6EC27D2E6A07572312E4AC14A8B5; PSTM=1492753444; bdshare_firstime=1494315105319; Hm_lvt_eac6b5c510bff152e71e5d0f0c5e4e6d=1494315038; Hm_lpvt_eac6b5c510bff152e71e5d0f0c5e4e6d=1494315333";
+		Document doc = null;
+//		while(doc == null){
+			try {
+				doc = Jsoup.connect(url)
+//						.referrer("http://www.tianyancha.com/search?key=%E5%8E%A6%E9%97%A8%E9%9B%86%E5%BE%AE%E7%A7%91%E6%8A%80")
+//						.cookie("tnet", "220.160.125.218")
+//						.cookie("_pk_ref.1.e431", "%5B%22%22%2C%22%22%2C1474510657%2C%22http%3A%2F%2Fantirobot.tianyancha.com%2Fcaptcha%2Fverify%3Freturn_url%3Dhttp%3A%2F%2Fwww.tianyancha.com%2Fcompany%2F22822%26rnd%3D9rGCSuVmjzCJQtn40wxl2w%3D%3D%22%5D")
+//						.cookie("TYCID", "bb7c05374d4944ec9af87c1c2fa1e8af")
+//						.cookie("RTYCID", "10ec9a7683ba4c61945b7880517e3d97")
+//						.cookie("_pk_id.1.e431", "47cf9a1c870f385e.1473646910.39.1474511202.1474510657.")
+//						.cookie("_pk_ses.1.e431", "*")
+//						.cookie("Hm_lvt_e92c8d65d92d534b0fc290df538b4758", "1474247407,1474336155,1474430037,1474507142")
+//						.cookie("Hm_lpvt_e92c8d65d92d534b0fc290df538b4758", "1474511781")
+//						.cookie("token", "8a048d9ec0f249519c38de83fe28522a")
+//						.cookie("_utm", "4aa05e54762d49a8a0452e50226412a8")
+
+//				Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
+//Accept-Encoding:gzip, deflate
+//Accept-Language:zh-CN,zh;q=0.8
+//Cache-Control:max-age=0
+//Connection:keep-alive
+//Cookie:__jsluid=31147c85e3bd80e44c94b55ef56f5d8b; UM_distinctid=15cc406e529808-028c01e14ee2f7-38385300-1fa400-15cc406e52a7ba; CNZZDATA1261033118=1208381236-1497932824-%7C1502182688; Hm_lvt_cdb4bc83287f8c1282df45ed61c4eac9=1502099909,1502158437; Hm_lpvt_cdb4bc83287f8c1282df45ed61c4eac9=1502184131; tlb_cookie=43query_8080; JSESSIONID=917E9FF012B2501BCA2DBFB28B31C889-n1:-1
+//Host:www.gsxt.gov.cn
+//Upgrade-Insecure-Requests:1
+//User-Agent:Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36
+						.header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8")
+			    		.header("Accept-Encoding", "gzip, deflate")
+			    		.header("Accept-Language", "zh-CN,zh;q=0.8")
+			    		.header("Cache-Control", "max-age=0")
+			    		.header("Connection", "keep-alive")
+			    		.header("Host", "www.gsxt.gov.cn")
+			    		.header("Upgrade-Insecure-Requests", "1")
+						.header("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.104 Safari/537.36 Core/1.53.2141.400 QQBrowser/9.5.10219.400")
+//						.header("Cookie", cookie)
+						.timeout(60000).ignoreContentType(true).get();//.get();
+				ThreadUtil.getSleep();
+			} catch (IOException e) {
+				try {
+					doc = Jsoup.connect(url)
+    //						.referrer("http://www.tianyancha.com/search?key=%E5%8E%A6%E9%97%A8%E9%9B%86%E5%BE%AE%E7%A7%91%E6%8A%80")
+    //						.cookie("tnet", "220.160.125.218")
+    //						.cookie("_pk_ref.1.e431", "%5B%22%22%2C%22%22%2C1474510657%2C%22http%3A%2F%2Fantirobot.tianyancha.com%2Fcaptcha%2Fverify%3Freturn_url%3Dhttp%3A%2F%2Fwww.tianyancha.com%2Fcompany%2F22822%26rnd%3D9rGCSuVmjzCJQtn40wxl2w%3D%3D%22%5D")
+    //						.cookie("TYCID", "bb7c05374d4944ec9af87c1c2fa1e8af")
+    //						.cookie("RTYCID", "10ec9a7683ba4c61945b7880517e3d97")
+    //						.cookie("_pk_id.1.e431", "47cf9a1c870f385e.1473646910.39.1474511202.1474510657.")
+    //						.cookie("_pk_ses.1.e431", "*")
+    //						.cookie("Hm_lvt_e92c8d65d92d534b0fc290df538b4758", "1474247407,1474336155,1474430037,1474507142")
+    //						.cookie("Hm_lpvt_e92c8d65d92d534b0fc290df538b4758", "1474511781")
+    //						.cookie("token", "8a048d9ec0f249519c38de83fe28522a")
+    //						.cookie("_utm", "4aa05e54762d49a8a0452e50226412a8")
+
+    //				Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
+    //Accept-Encoding:gzip, deflate
+    //Accept-Language:zh-CN,zh;q=0.8
+    //Cache-Control:max-age=0
+    //Connection:keep-alive
+    //Cookie:__jsluid=31147c85e3bd80e44c94b55ef56f5d8b; UM_distinctid=15cc406e529808-028c01e14ee2f7-38385300-1fa400-15cc406e52a7ba; CNZZDATA1261033118=1208381236-1497932824-%7C1502182688; Hm_lvt_cdb4bc83287f8c1282df45ed61c4eac9=1502099909,1502158437; Hm_lpvt_cdb4bc83287f8c1282df45ed61c4eac9=1502184131; tlb_cookie=43query_8080; JSESSIONID=917E9FF012B2501BCA2DBFB28B31C889-n1:-1
+    //Host:www.gsxt.gov.cn
+    //Upgrade-Insecure-Requests:1
+    //User-Agent:Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36
+                            .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8")
+                            .header("Accept-Encoding", "gzip, deflate")
+                            .header("Accept-Language", "zh-CN,zh;q=0.8")
+                            .header("Cache-Control", "max-age=0")
+                            .header("Connection", "keep-alive")
+                            .header("Host", "www.gsxt.gov.cn")
+                            .header("Upgrade-Insecure-Requests", "1")
+                            .header("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.104 Safari/537.36 Core/1.53.2141.400 QQBrowser/9.5.10219.400")
+    //						.header("Cookie", cookie)
+                            .timeout(60000).ignoreContentType(true).post();//.get();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+				ThreadUtil.getSleep();
+				e.printStackTrace();
+			}
+//		}
+		return doc;
+	}
+
+
+	public static Document getJsoupPost(String url, Map<String, String> params, Map<String, String> headers){
+		Connection connection=Jsoup.connect(url);
+
+		for (Map.Entry<String,String> header:headers.entrySet()){
+			connection=connection.header(header.getKey(),header.getValue());
+		}
+			connection=connection.data(params);
+		try {
+			Document document = connection.timeout(60000).ignoreContentType(true).post();
+
+			return document;
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	public static Document getJsoupPost(String url, Map<String, String> params, Map<String, String> headers, Map<String, String> cookies){
+		Connection connection=Jsoup.connect(url);
+
+		for (Map.Entry<String,String> header:headers.entrySet()){
+			connection=connection.header(header.getKey(),header.getValue());
+		}
+			connection=connection.cookies(cookies);
+			connection=connection.data(params);
+		try {
+			Document document = connection.timeout(60000).ignoreContentType(true).post();
+
+			return document;
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	public static Document getJsoupGet(String url){
+//		Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
+//Accept-Encoding:gzip, deflate, br
+//Accept-Language:zh-CN,zh;q=0.8
+//Cache-Control:max-age=0
+//Connection:keep-alive
+//Cookie:_zap=196859c1-7d8a-41da-b3c1-21dfa8a52538; d_c0="AFDC8UYRdAuPTvuaLgt37jBOAwNduCJAat0=|1489547718"; _zap=a9d23f61-4bb5-409d-b96b-b41bb3639f6f; __utma=51854390.941413460.1496986261.1496986261.1496986261.1; __utmz=51854390.1496986261.1.1.utmcsr=zhihu.com|utmccn=(referral)|utmcmd=referral|utmcct=/search; __utmv=51854390.100-1|2=registration_date=20131115=1^3=entry_date=20131115=1; q_c1=1e36e2d349a04f959e248c501ed670fc|1502333988000|1492646232000; q_c1=1e36e2d349a04f959e248c501ed670fc|1502333991000|1492646232000; capsion_ticket="2|1:0|10:1502963994|14:capsion_ticket|44:NjhjNzMwMTM3NzNjNGIxY2FmMTI1ZDNkYjUzMGNiNzU=|c51b32f22b3a6a70135500e86a1f1d2a7e02c4f2efc8b661e32d70983c66da97"; _xsrf=005f407d29e2cfe45b0ca2b2cfca011c; l_cap_id="NTJiZDliZDU1ODg0NGI1MGI2MDUxYjNkYjk1NmU5ODY=|1503308453|c38eb423ab00307449fdc05214a459c01e749626"; r_cap_id="OTU4MmZkMjFlNTNhNGRkNDg4MmE0ZTBjNGQ3ZDFmNTM=|1503308453|be309129bbbfbb413c3d0c52d11f6cd6667b7ed5"; cap_id="NWFhZjBiNDYyOTRjNDc2YWEzOWMyNGFkN2E2NTk4NzM=|1503308453|85976c5f5d7bbec1bb44ecf0e517975e9314390d"; aliyungf_tc=AQAAAJXbPXvOTQgAUpOP2yOBA9GB/KeM; _xsrf=005f407d29e2cfe45b0ca2b2cfca011c
+//Host:www.zhihu.com
+//Upgrade-Insecure-Requests:1
+//User-Agent:Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36
+		Map<String, String> headers = new HashMap<>();
+		headers.put("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8");
+		headers.put("Accept-Encoding", "gzip, deflate, br");
+		headers.put("Accept-Language", "zh-CN,zh;q=0.8");
+		headers.put("Cache-Control", "max-age=0");
+		headers.put("Connection", "keep-alive");
+//		headers.put("Content-Type", "max-age=0");
+		headers.put("Host", "www.zhihu.com");
+		headers.put("Upgrade-Insecure-Requests", "1");
+//		headers.put("Origin", "https://www.zhihu.com");
+//		headers.put("Referer", "https://www.zhihu.com/topics");
+		headers.put("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36");
+//		headers.put("X-Requested-With", "XMLHttpRequest");
+//		headers.put("X-Xsrftoken", items.get("_xsrf"));
+
+
+		return getJsoupGet(url,headers);
+	}
+	public static Document getJsoupGet(String url, Map<String, String> headers){
+		Connection connection=Jsoup.connect(url);
+
+		for (Map.Entry<String,String> header:headers.entrySet()){
+			connection=connection.header(header.getKey(),header.getValue());
+		}
+//			connection=connection.data(params);
+		try {
+			Document document = connection.timeout(60000).ignoreContentType(true).get();
+
+			return document;
+		} catch (SocketTimeoutException e) {
+			Document document = null;
+			try {
+				document = connection.timeout(60000).ignoreContentType(true).get();
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+
+			return document;
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	public static Document getJsoupGet(String url, Map<String, String> headers,ProxyIp proxyIp){
+		System.setProperty("http.maxRedirects", "50");
+		System.getProperties().setProperty("proxySet", "true");
+		// 如果不设置，只要代理IP和代理端口正确,此项不设置也可以
+		System.getProperties().setProperty("http.proxyHost", proxyIp.getIp());
+		System.getProperties().setProperty("http.proxyPort", proxyIp.getPort());
+
+		Connection connection=Jsoup.connect(url);
+
+		for (Map.Entry<String,String> header:headers.entrySet()){
+			connection=connection.header(header.getKey(),header.getValue());
+		}
+//			connection=connection.data(params);
+		try {
+			Document document = null;
+			try {
+				document = connection.timeout(60000).ignoreContentType(true).get();
+			} catch (SocketTimeoutException e) {
+				try {
+					Thread.sleep(30 * 1000);
+				} catch (InterruptedException e1) {
+					e1.printStackTrace();
+				}
+				document = connection.timeout(60000).ignoreContentType(true).get();
+			}
+
+			return document;
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	public static Document getJsoupGet(String url, Map<String, String> headers,Map<String, String> params){
+		Connection connection=Jsoup.connect(url);
+
+		for (Map.Entry<String,String> header:headers.entrySet()){
+			connection=connection.header(header.getKey(),header.getValue());
+		}
+			connection=connection.data(params);
+		try {
+			Document document = connection.timeout(60000).ignoreContentType(true).get();
+
+			return document;
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	public static List<Object> getPageSourceByIPlist(String url,Map<String,String> headers ,int start){
+		List<ProxyIp> proxyIpList = getProxyIpList();
+		List<Object> result = new ArrayList<>();
+		Document document = null;
+		Elements complist = null;
+		Elements totalcount = null;
+		String pagesource = null;
+		if (start == proxyIpList.size()) {
+			start = 0;
+		}
+
+
+		for (int i = start; i < proxyIpList.size(); i++) {
+			ProxyIp proxyPo = proxyIpList.get(i);
+			try {
+				document = getJsoupGet(url,headers, proxyIpList.get(i));
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			start=i;
+			if(pagesource!= null&&!pagesource.contains("过于频繁")){
+//                String text = Jsoup.parse(pagesource).text();
+				break;
+			}
+
+		}
+		result.add(document);
+		result.add(start);
+		return result;
+	}
+
+	public static Document getDocument2(String url,ProxyIp proxyIp){
+		String cookie="BAIDUID=763A6EC27D2E6A07572312E4AC14A8B5:FG=1; BIDUPSID=763A6EC27D2E6A07572312E4AC14A8B5; PSTM=1492753444; bdshare_firstime=1494315105319; Hm_lvt_eac6b5c510bff152e71e5d0f0c5e4e6d=1494315038; Hm_lpvt_eac6b5c510bff152e71e5d0f0c5e4e6d=1494315333";
+		Document doc = null;
+		System.setProperty("http.maxRedirects", "50");
+		System.getProperties().setProperty("proxySet", "true");
+		// 如果不设置，只要代理IP和代理端口正确,此项不设置也可以
+				System.getProperties().setProperty("http.proxyHost", proxyIp.getIp());
+				System.getProperties().setProperty("http.proxyPort", proxyIp.getPort());
+//		while(doc == null){
+			try {
+				doc = Jsoup.connect(url)
+//						.referrer("http://www.tianyancha.com/search?key=%E5%8E%A6%E9%97%A8%E9%9B%86%E5%BE%AE%E7%A7%91%E6%8A%80")
+//						.cookie("tnet", "220.160.125.218")
+//						.cookie("_pk_ref.1.e431", "%5B%22%22%2C%22%22%2C1474510657%2C%22http%3A%2F%2Fantirobot.tianyancha.com%2Fcaptcha%2Fverify%3Freturn_url%3Dhttp%3A%2F%2Fwww.tianyancha.com%2Fcompany%2F22822%26rnd%3D9rGCSuVmjzCJQtn40wxl2w%3D%3D%22%5D")
+//						.cookie("TYCID", "bb7c05374d4944ec9af87c1c2fa1e8af")
+//						.cookie("RTYCID", "10ec9a7683ba4c61945b7880517e3d97")
+//						.cookie("_pk_id.1.e431", "47cf9a1c870f385e.1473646910.39.1474511202.1474510657.")
+//						.cookie("_pk_ses.1.e431", "*")
+//						.cookie("Hm_lvt_e92c8d65d92d534b0fc290df538b4758", "1474247407,1474336155,1474430037,1474507142")
+//						.cookie("Hm_lpvt_e92c8d65d92d534b0fc290df538b4758", "1474511781")
+//						.cookie("token", "8a048d9ec0f249519c38de83fe28522a")
+//						.cookie("_utm", "4aa05e54762d49a8a0452e50226412a8")
+
+//				Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
+//Accept-Encoding:gzip, deflate
+//Accept-Language:zh-CN,zh;q=0.8
+//Cache-Control:max-age=0
+//Connection:keep-alive
+//Cookie:__jsluid=31147c85e3bd80e44c94b55ef56f5d8b; UM_distinctid=15cc406e529808-028c01e14ee2f7-38385300-1fa400-15cc406e52a7ba; CNZZDATA1261033118=1208381236-1497932824-%7C1502182688; Hm_lvt_cdb4bc83287f8c1282df45ed61c4eac9=1502099909,1502158437; Hm_lpvt_cdb4bc83287f8c1282df45ed61c4eac9=1502184131; tlb_cookie=43query_8080; JSESSIONID=917E9FF012B2501BCA2DBFB28B31C889-n1:-1
+//Host:www.gsxt.gov.cn
+//Upgrade-Insecure-Requests:1
+//User-Agent:Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36
+						.header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8")
+			    		.header("Accept-Encoding", "gzip, deflate")
+			    		.header("Accept-Language", "zh-CN,zh;q=0.8")
+			    		.header("Cache-Control", "max-age=0")
+			    		.header("Connection", "keep-alive")
+			    		.header("Host", "www.gsxt.gov.cn")
+			    		.header("Upgrade-Insecure-Requests", "1")
+						.header("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.104 Safari/537.36 Core/1.53.2141.400 QQBrowser/9.5.10219.400")
+//						.header("Cookie", cookie)
+						.timeout(60000).ignoreContentType(true).get();//.get();
+				ThreadUtil.getSleep();
+			} catch (IOException e) {
+				try {
+					doc = Jsoup.connect(url)
+    //						.referrer("http://www.tianyancha.com/search?key=%E5%8E%A6%E9%97%A8%E9%9B%86%E5%BE%AE%E7%A7%91%E6%8A%80")
+    //						.cookie("tnet", "220.160.125.218")
+    //						.cookie("_pk_ref.1.e431", "%5B%22%22%2C%22%22%2C1474510657%2C%22http%3A%2F%2Fantirobot.tianyancha.com%2Fcaptcha%2Fverify%3Freturn_url%3Dhttp%3A%2F%2Fwww.tianyancha.com%2Fcompany%2F22822%26rnd%3D9rGCSuVmjzCJQtn40wxl2w%3D%3D%22%5D")
+    //						.cookie("TYCID", "bb7c05374d4944ec9af87c1c2fa1e8af")
+    //						.cookie("RTYCID", "10ec9a7683ba4c61945b7880517e3d97")
+    //						.cookie("_pk_id.1.e431", "47cf9a1c870f385e.1473646910.39.1474511202.1474510657.")
+    //						.cookie("_pk_ses.1.e431", "*")
+    //						.cookie("Hm_lvt_e92c8d65d92d534b0fc290df538b4758", "1474247407,1474336155,1474430037,1474507142")
+    //						.cookie("Hm_lpvt_e92c8d65d92d534b0fc290df538b4758", "1474511781")
+    //						.cookie("token", "8a048d9ec0f249519c38de83fe28522a")
+    //						.cookie("_utm", "4aa05e54762d49a8a0452e50226412a8")
+
+    //				Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
+    //Accept-Encoding:gzip, deflate
+    //Accept-Language:zh-CN,zh;q=0.8
+    //Cache-Control:max-age=0
+    //Connection:keep-alive
+    //Cookie:__jsluid=31147c85e3bd80e44c94b55ef56f5d8b; UM_distinctid=15cc406e529808-028c01e14ee2f7-38385300-1fa400-15cc406e52a7ba; CNZZDATA1261033118=1208381236-1497932824-%7C1502182688; Hm_lvt_cdb4bc83287f8c1282df45ed61c4eac9=1502099909,1502158437; Hm_lpvt_cdb4bc83287f8c1282df45ed61c4eac9=1502184131; tlb_cookie=43query_8080; JSESSIONID=917E9FF012B2501BCA2DBFB28B31C889-n1:-1
+    //Host:www.gsxt.gov.cn
+    //Upgrade-Insecure-Requests:1
+    //User-Agent:Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36
+                            .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8")
+                            .header("Accept-Encoding", "gzip, deflate")
+                            .header("Accept-Language", "zh-CN,zh;q=0.8")
+                            .header("Cache-Control", "max-age=0")
+                            .header("Connection", "keep-alive")
+                            .header("Host", "www.gsxt.gov.cn")
+                            .header("Upgrade-Insecure-Requests", "1")
+                            .header("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.104 Safari/537.36 Core/1.53.2141.400 QQBrowser/9.5.10219.400")
+    //						.header("Cookie", cookie)
+                            .timeout(10000).ignoreContentType(true).post();//.get();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+				ThreadUtil.getSleep();
+				e.printStackTrace();
+			}
+//		}
+		return doc;
+	}
+	public static Document getDocument3(String url,ProxyIp proxyIp){
+		String cookie="BAIDUID=763A6EC27D2E6A07572312E4AC14A8B5:FG=1; BIDUPSID=763A6EC27D2E6A07572312E4AC14A8B5; PSTM=1492753444; bdshare_firstime=1494315105319; Hm_lvt_eac6b5c510bff152e71e5d0f0c5e4e6d=1494315038; Hm_lpvt_eac6b5c510bff152e71e5d0f0c5e4e6d=1494315333";
+		Document doc = null;
+		System.setProperty("http.maxRedirects", "50");
+		System.getProperties().setProperty("proxySet", "true");
+		// 如果不设置，只要代理IP和代理端口正确,此项不设置也可以
+				System.getProperties().setProperty("http.proxyHost", proxyIp.getIp());
+				System.getProperties().setProperty("http.proxyPort", proxyIp.getPort());
+//		while(doc == null){
+			try {
+				doc = Jsoup.connect(url)
+//						.referrer("http://www.tianyancha.com/search?key=%E5%8E%A6%E9%97%A8%E9%9B%86%E5%BE%AE%E7%A7%91%E6%8A%80")
+//						.cookie("tnet", "220.160.125.218")
+//						.cookie("_pk_ref.1.e431", "%5B%22%22%2C%22%22%2C1474510657%2C%22http%3A%2F%2Fantirobot.tianyancha.com%2Fcaptcha%2Fverify%3Freturn_url%3Dhttp%3A%2F%2Fwww.tianyancha.com%2Fcompany%2F22822%26rnd%3D9rGCSuVmjzCJQtn40wxl2w%3D%3D%22%5D")
+//						.cookie("TYCID", "bb7c05374d4944ec9af87c1c2fa1e8af")
+//						.cookie("RTYCID", "10ec9a7683ba4c61945b7880517e3d97")
+//						.cookie("_pk_id.1.e431", "47cf9a1c870f385e.1473646910.39.1474511202.1474510657.")
+//						.cookie("_pk_ses.1.e431", "*")
+//						.cookie("Hm_lvt_e92c8d65d92d534b0fc290df538b4758", "1474247407,1474336155,1474430037,1474507142")
+//						.cookie("Hm_lpvt_e92c8d65d92d534b0fc290df538b4758", "1474511781")
+//						.cookie("token", "8a048d9ec0f249519c38de83fe28522a")
+//						.cookie("_utm", "4aa05e54762d49a8a0452e50226412a8")
+
+//				Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
+//Accept-Encoding:gzip, deflate
+//Accept-Language:zh-CN,zh;q=0.8
+//Cache-Control:max-age=0
+//Connection:keep-alive
+//Cookie:__jsluid=31147c85e3bd80e44c94b55ef56f5d8b; UM_distinctid=15cc406e529808-028c01e14ee2f7-38385300-1fa400-15cc406e52a7ba; CNZZDATA1261033118=1208381236-1497932824-%7C1502182688; Hm_lvt_cdb4bc83287f8c1282df45ed61c4eac9=1502099909,1502158437; Hm_lpvt_cdb4bc83287f8c1282df45ed61c4eac9=1502184131; tlb_cookie=43query_8080; JSESSIONID=917E9FF012B2501BCA2DBFB28B31C889-n1:-1
+//Host:www.gsxt.gov.cn
+//Upgrade-Insecure-Requests:1
+//User-Agent:Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36
+						.header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8")
+			    		.header("Accept-Encoding", "gzip, deflate")
+			    		.header("Accept-Language", "zh-CN,zh;q=0.8")
+			    		.header("Cache-Control", "max-age=0")
+			    		.header("Connection", "keep-alive")
+			    		.header("Host", "www.gsxt.gov.cn")
+			    		.header("Upgrade-Insecure-Requests", "1")
+						.header("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.104 Safari/537.36 Core/1.53.2141.400 QQBrowser/9.5.10219.400")
+//						.header("Cookie", cookie)
+						.timeout(60000).ignoreContentType(true).get();//.get();
+				ThreadUtil.getSleep();
+			} catch (IOException e) {
+				try {
+					doc = Jsoup.connect(url)
+    //						.referrer("http://www.tianyancha.com/search?key=%E5%8E%A6%E9%97%A8%E9%9B%86%E5%BE%AE%E7%A7%91%E6%8A%80")
+    //						.cookie("tnet", "220.160.125.218")
+    //						.cookie("_pk_ref.1.e431", "%5B%22%22%2C%22%22%2C1474510657%2C%22http%3A%2F%2Fantirobot.tianyancha.com%2Fcaptcha%2Fverify%3Freturn_url%3Dhttp%3A%2F%2Fwww.tianyancha.com%2Fcompany%2F22822%26rnd%3D9rGCSuVmjzCJQtn40wxl2w%3D%3D%22%5D")
+    //						.cookie("TYCID", "bb7c05374d4944ec9af87c1c2fa1e8af")
+    //						.cookie("RTYCID", "10ec9a7683ba4c61945b7880517e3d97")
+    //						.cookie("_pk_id.1.e431", "47cf9a1c870f385e.1473646910.39.1474511202.1474510657.")
+    //						.cookie("_pk_ses.1.e431", "*")
+    //						.cookie("Hm_lvt_e92c8d65d92d534b0fc290df538b4758", "1474247407,1474336155,1474430037,1474507142")
+    //						.cookie("Hm_lpvt_e92c8d65d92d534b0fc290df538b4758", "1474511781")
+    //						.cookie("token", "8a048d9ec0f249519c38de83fe28522a")
+    //						.cookie("_utm", "4aa05e54762d49a8a0452e50226412a8")
+
+    //				Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
+    //Accept-Encoding:gzip, deflate
+    //Accept-Language:zh-CN,zh;q=0.8
+    //Cache-Control:max-age=0
+    //Connection:keep-alive
+    //Cookie:__jsluid=31147c85e3bd80e44c94b55ef56f5d8b; UM_distinctid=15cc406e529808-028c01e14ee2f7-38385300-1fa400-15cc406e52a7ba; CNZZDATA1261033118=1208381236-1497932824-%7C1502182688; Hm_lvt_cdb4bc83287f8c1282df45ed61c4eac9=1502099909,1502158437; Hm_lpvt_cdb4bc83287f8c1282df45ed61c4eac9=1502184131; tlb_cookie=43query_8080; JSESSIONID=917E9FF012B2501BCA2DBFB28B31C889-n1:-1
+    //Host:www.gsxt.gov.cn
+    //Upgrade-Insecure-Requests:1
+    //User-Agent:Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36
+                            .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8")
+                            .header("Accept-Encoding", "gzip, deflate")
+                            .header("Accept-Language", "zh-CN,zh;q=0.8")
+                            .header("Cache-Control", "max-age=0")
+                            .header("Connection", "keep-alive")
+                            .header("Host", "www.gsxt.gov.cn")
+                            .header("Upgrade-Insecure-Requests", "1")
+                            .header("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.104 Safari/537.36 Core/1.53.2141.400 QQBrowser/9.5.10219.400")
+    //						.header("Cookie", cookie)
+                            .timeout(10000).ignoreContentType(true).get();//.get();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+				ThreadUtil.getSleep();
+				e.printStackTrace();
+			}
+//		}
+		return doc;
+	}
+
+	public static Document getDocument1(String url,ProxyIp proxyIp){
+		return ipproxyGetHtml(url,proxyIp.getIp(),proxyIp.getPort());
+	}
+
+	public static Map<String, String> getCookies(String url){
+		//        j_username=13552340049&j_password=bw123456&_spring_security_remember_me=on
+		Map<String, String> cookies = new HashMap<String, String>();
+		Map<String, String> map = new HashMap<String, String>();
+		Connection.Response response = null;
+
+		try {
+			response = Jsoup.connect(url)
+					.header("Host",getHost(url))
+					.header("Connection", "keep-alive")
+					.header("Cache-Control", "max-age=0")
+					.header("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36")
+					.header("Content-Type", "application/x-www-form-urlencoded")
+					.header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8")
+					.header("Accept-Encoding", "gzip, deflate")
+					.header("Accept-Language", "zh-CN,zh;q=0.8")
+					.method(Connection.Method.GET)
+					.timeout(20000)
+					.execute();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		if (response.statusCode() == 200) {
+//            {JSESSIONID=3016E2A102831D05DF1E5D928ECCB604}
+
+			cookies=response.cookies();
+			System.out.println(response.cookies());
+			System.out.println("========================================================================================");
+			System.out.println(response.body());
+			System.out.println("========================================================================================");
+
+
+		}
+
+		return cookies;
+	}
+
+	public static String getHost(String url){
+		URL  url1 = null;
+		try {
+			url1 = new  URL(url);
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		}
+		String host = url1.getHost();// 获取主机名
+		System.out.println("host:"+host);// 结果 blog.csdn.net
+
+		return host;
+	}
+	public static Document getDoc(String url){
+//		Properties pathProperties = PropertyUtils.getPathProperties("resource/config/cookie.properties");
+//		String ipAndPort = pathProperties.getProperty("ipStr");
+//		String cookie = pathProperties.getProperty("cookie");
+		log.info
+
+				("抓取对应地址工具类中的地址是:" + url);
+		Document doc = null;
+		while(doc == null){
+//			String[] split = ipAndPort.split(":");
+//			String ip = split[0];
+//			String port = split[1];
+			ThreadUtil.getSleep();
+			try {
+				System.setProperty("http.maxRedirects", "50");
+				System.getProperties().setProperty("proxySet", "true");
+				// 如果不设置，只要代理IP和代理端口正确,此项不设置也可以
+//				System.getProperties().setProperty("http.proxyHost", ip);
+//				System.getProperties().setProperty("http.proxyPort", port);
+				doc = Jsoup.connect(url)
+						.header("Accept","text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8")
+						.header("User-Agent", "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36")
+//						.header("Cookie", cookie)
+						.ignoreContentType(true).timeout(30000).get();
+				ThreadUtil.getSleep();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		return doc;
+	}
+
+	public static Document ipproxyGetHtml(String url,String ip,String port) {
+		String html = null;
+		HttpGet httpGet = new HttpGet(url);
+		httpGet.setHeader("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36");
+		httpGet.setHeader("Connection", "keep-alive");
+		httpGet.setHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
+		httpGet.setHeader("Accept-Language", "zh-CN,zh;q=0.8");
+		httpGet.setHeader("Accept-Encoding", "gzip, deflate, sdch");
+
+		RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(20000).setConnectTimeout(20000).build();
+		httpGet.setConfig(requestConfig);
+		HttpHost proxy = null;
+
+		try {
+			proxy = new HttpHost(ip, Integer.parseInt(port));
+		} catch (IllegalArgumentException e) {
+			return null;
+		}
+
+		HttpClientBuilder httpClientBuilder = HttpClients.custom();
+		CloseableHttpClient closeableHttpClient1 = httpClientBuilder.setProxy(proxy).build();
+		HttpResponse res = null;
+
+		try {
+			res = closeableHttpClient1.execute(httpGet);
+		} catch (ClientProtocolException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			System.err.println("It's can't be used : " + ip + " for " + url);
+			return null;
+//			e.printStackTrace();
+		}
+		HttpEntity entity = null;
+		try {
+			entity = res.getEntity();
+		} catch (NullPointerException e) {
+			return null;
+		}
+		int code = res.getStatusLine().getStatusCode();
+		System.out.println("返回代码是：" + code);
+		if (code == 200) {
+			System.out.println("可用ip为：" + ip + "\t" + port);
+			if (entity != null) {
+				try {
+					html = EntityUtils.toString(entity, "utf-8");
+				} catch (ParseException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		} else {
+			System.out.println("此ip不可用：" + ip + "\t" + port);
+		}
+
+		Document doc = null;
+		try {
+			doc = Jsoup.parse(html, "", new Parser(new XmlTreeBuilder()));
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+
+		return doc;
+	}
+
+
+
+	public static boolean isfreeip=true;
+
+	public static List<ProxyIp> getProxyIpList() {
+		List<ProxyIp> ipList = new ArrayList<>();
+		if(isfreeip){
+			List<String> ips= readFileByLine(ip_filePath+"代理IP.txt");
+			for(int i=0;i<ips.size();i++){
+				String ipstring = ips.get(i);
+				if(ipstring.contains(":")){
+					ProxyIp proxyIp = new ProxyIp();
+					String ip=ipstring.split(":")[0];
+					String port=ipstring.split(":")[1];
+					proxyIp.setIp(ip);
+					proxyIp.setPort(port);
+					ipList.add(proxyIp);
+				}
+			}
+		}else {
+
+			List<String> redislist = getList("iplist",1,8);
+			for(int i=0;i<redislist.size();i++){
+				String ipstring = redislist.get(i);
+				if(ipstring.contains(":")){
+					ProxyIp proxyIp = new ProxyIp();
+					String ip=ipstring.split(":")[0];
+					String port=ipstring.split(":")[1];
+					proxyIp.setIp(ip);
+					proxyIp.setPort(port);
+					ipList.add(proxyIp);
+				}
+			}
+		}
+
+		return ipList;
+	}
+  }

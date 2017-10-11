@@ -32,12 +32,6 @@ import java.util.Map;
 import static com.yidianzixun.util.FileUtils.readFileByLine;
 import static com.yidianzixun.util.RedisUtil.getList;
 
-
-/**
- * 抓取对应地址工具类
- * @author wuqiyang
- *
- */
 public class JsoupUtils {
 	private  static Logger log = Logger.getLogger(JsoupUtils.class);
 	public static String ip_filePath = System.getProperty("user.dir") + "/" + "proxyfile/";
